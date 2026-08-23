@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Beargo · Muévete a tu manera',
-  description: 'Tu compañero de confianza para moverte por la ciudad.',
+  title: 'BearRide · Tu viaje, tu destino',
+  description: 'Movilidad urbana cercana, segura y simple para Argentina.',
   generator: 'v0.app',
   icons: {
     icon: [
