@@ -14,22 +14,24 @@
   SQL que exige conductor aprobado.
 - Funciones SQL para cotizar, crear solicitudes y transicionar viajes. El
   precio y el estado se calculan/validan en base de datos.
-- Carga diferida de Mapbox solo en la ruta de solicitud; no existe un mapa CSS
-  que simule ser real.
+- Mapa MapLibre con estilo de Mapbox, geocodificación limitada a Formosa y
+  cálculo de rutas mediante Mapbox Directions. La búsqueda se ejecuta desde el
+  servidor y no usa el Nominatim público para autocompletado.
+- El pasajero obtiene una cotización desde la función SQL autorizada y confirma
+  la solicitud mediante `create_ride_request`; el conductor aprobado puede
+  activar/desactivar disponibilidad con ubicación del dispositivo.
 - Contratos para proveedor de pagos y proveedor de notificaciones, manifiesto
   PWA y pruebas unitarias de tarifas y estados.
 
 ## Aún bloqueado por configuración externa
 
-No se aplicó ninguna migración ni se creó un usuario de prueba porque no hay un
-proyecto Supabase ni credenciales proporcionadas. Tampoco se puede activar
-geocoding/rutas de Mapbox sin `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`.
+No se aplicaron migraciones ni se creó un usuario de prueba desde este
+repositorio. La verificación de punta a punta requiere que las migraciones y
+reglas de tarifa estén aplicadas en el proyecto Supabase configurado.
 
 Para continuar con verificación funcional se debe:
 
-1. Copiar `.env.example` a `.env.local` y completar URL y publishable key de
-   Supabase, más el token público de Mapbox.
-2. Aplicar `supabase/migrations/` en un proyecto Supabase de desarrollo.
+1. Aplicar `supabase/migrations/` en un proyecto Supabase de desarrollo.
 3. Configurar URLs de redirección de Auth para `/verify` y recuperación.
 4. Cargar reglas de tarifa aprobadas para la zona Formosa inicial. Se dejó la
    zona, pero no se inventaron precios comerciales.

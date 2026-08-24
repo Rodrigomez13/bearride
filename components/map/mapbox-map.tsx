@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 
 type Coordinates = { latitude: number; longitude: number }
 type Driver = Coordinates & { id: string; name: string; eta: number; rating: number; vehicle: string }
+type RouteGeometry = { coordinates: [number, number][] }
 
 const FORMOSA: [number, number] = [-58.1754, -26.1775]
 const DRIVERS: Driver[] = [
@@ -15,11 +16,12 @@ const DRIVERS: Driver[] = [
   { id: 'br-422', name: 'Sofía', latitude: -26.191, longitude: -58.184, eta: 8, rating: 4.9, vehicle: 'Chevrolet Onix · Negro' },
 ]
 
-export function MapboxMap({ onLocation, destination }: { onLocation?: (coordinates: Coordinates) => void; destination?: Coordinates | null }) {
+export function MapboxMap({ onLocation, destination, origin, route }: { onLocation?: (coordinates: Coordinates) => void; destination?: Coordinates | null; origin?: Coordinates | null; route?: RouteGeometry | null }) {
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<import('maplibre-gl').Map | null>(null)
   const markersRef = useRef<import('maplibre-gl').Marker[]>([])
   const destinationMarkerRef = useRef<import('maplibre-gl').Marker | null>(null)
+  const originMarkerRef = useRef<import('maplibre-gl').Marker | null>(null)
   const [message, setMessage] = useState('Cargando mapa de Formosa…')
 
   useEffect(() => {
@@ -27,12 +29,13 @@ export function MapboxMap({ onLocation, destination }: { onLocation?: (coordinat
     let disposed = false
     void import('maplibre-gl').then(({ default: maplibregl }) => {
       if (disposed || !container.current) return
+      const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
       const map = new maplibregl.Map({
         container: container.current,
         center: FORMOSA,
         zoom: 12,
         attributionControl: false,
-        style: {
+        style: accessToken ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=${accessToken}` : {
           version: 8,
           sources: {
             osm: {
@@ -58,11 +61,11 @@ export function MapboxMap({ onLocation, destination }: { onLocation?: (coordinat
         element.innerHTML = '<span style="font-size:9px;font-weight:700;letter-spacing:-.04em">CAR</span>'
         return new maplibregl.Marker({ element }).setLngLat([driver.longitude, driver.latitude]).setPopup(new maplibregl.Popup({ offset: 22 }).setHTML(`<strong>${driver.name}</strong><br/>${driver.vehicle}<br/>★ ${driver.rating} · ${driver.eta} min`)).addTo(map)
       })
-      map.on('load', () => setMessage(`${DRIVERS.length} conductores cerca · Tocá el mapa para elegir`))
+      map.on('load', () => setMessage(accessToken ? `${DRIVERS.length} conductores cerca · Elegí un punto en el mapa` : 'Mapa sin configurar. Agregá el token de Mapbox.'))
       map.on('click', (event) => onLocation?.({ latitude: event.lngLat.lat, longitude: event.lngLat.lng }))
       mapRef.current = map
     }).catch(() => setMessage('No fue posible cargar el mapa. Revisá tu conexión.'))
-    return () => { disposed = true; markersRef.current.forEach((marker) => marker.remove()); destinationMarkerRef.current?.remove(); mapRef.current?.remove(); mapRef.current = null }
+    return () => { disposed = true; markersRef.current.forEach((marker) => marker.remove()); destinationMarkerRef.current?.remove(); originMarkerRef.current?.remove(); mapRef.current?.remove(); mapRef.current = null }
   }, [onLocation])
 
   useEffect(() => {
@@ -76,6 +79,33 @@ export function MapboxMap({ onLocation, destination }: { onLocation?: (coordinat
       mapRef.current?.flyTo({ center: [destination.longitude, destination.latitude], zoom: 14, duration: 800 })
     })
   }, [destination])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !origin) return
+    void import('maplibre-gl').then(({ default: maplibregl }) => {
+      originMarkerRef.current?.remove()
+      const element = document.createElement('div')
+      element.className = 'size-4 rounded-full border-4 border-card bg-primary shadow-lg'
+      originMarkerRef.current = new maplibregl.Marker({ element }).setLngLat([origin.longitude, origin.latitude]).addTo(map)
+    })
+  }, [origin])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const sourceId = 'ride-route'
+    const layerId = 'ride-route-line'
+    const render = () => {
+      if (map.getLayer(layerId)) map.removeLayer(layerId)
+      if (map.getSource(sourceId)) map.removeSource(sourceId)
+      if (!route?.coordinates?.length) return
+      map.addSource(sourceId, { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: route.coordinates } } })
+      map.addLayer({ id: layerId, type: 'line', source: sourceId, paint: { 'line-color': '#17665d', 'line-width': 5, 'line-opacity': .9 } })
+    }
+    if (map.isStyleLoaded()) render(); else map.once('load', render)
+    return () => { if (map.getLayer(layerId)) map.removeLayer(layerId); if (map.getSource(sourceId)) map.removeSource(sourceId) }
+  }, [route])
 
   return <div className="relative min-h-80 overflow-hidden rounded-2xl border border-border bg-secondary"><div ref={container} className="absolute inset-0" /><div className="absolute left-3 top-3 flex items-center gap-2 rounded-xl bg-card/95 px-3 py-2 text-xs font-semibold shadow-sm"><CarFront className="size-4 text-primary" />{DRIVERS.length} disponibles</div><p className="absolute bottom-3 left-3 flex items-center gap-2 rounded-lg bg-card/95 px-3 py-2 text-xs font-semibold shadow-sm"><LocateFixed className="size-3 text-primary" />{message}</p></div>
 }
