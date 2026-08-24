@@ -1,0 +1,24 @@
+{
+  "project": "Beargo / BearRide",
+  "purpose": "Visual asset pack for passenger, driver and safety/admin flows.",
+  "source": "Assets supplied by the project owner in bearRider.zip.",
+  "folders": {
+    "branding": "Primary logos and application icon source.",
+    "app-icons": "Web/PWA/Apple/Android icon derivatives.",
+    "roles": "Passenger and driver role illustrations.",
+    "banners": "Download-app and safety visuals.",
+    "map": "Editable SVG map markers for Mapbox.",
+    "docs": "Usage notes."
+  },
+  "recommended_usage": {
+    "logo": "/branding/beargo-logo-primary.png",
+    "favicon": "/app-icons/favicon-32.png",
+    "apple_icon": "/app-icons/apple-touch-icon.png",
+    "pwa_192": "/app-icons/android-icon-192.png",
+    "pwa_512": "/app-icons/android-icon-512.png",
+    "passenger": "/roles/passenger-icon.png",
+    "driver": "/roles/driver-icon.png",
+    "safety": "/banners/safety-banner.png",
+    "download": "/banners/download-app-banner.png"
+  }
+}

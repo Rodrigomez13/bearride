@@ -1,0 +1,20 @@
+export const RIDE_STATUSES = ['REQUESTING', 'SEARCHING_DRIVER', 'DRIVER_ASSIGNED', 'DRIVER_ARRIVING', 'DRIVER_ARRIVED', 'TRIP_STARTED', 'TRIP_COMPLETED', 'PAYMENT_PENDING', 'COMPLETED', 'CANCELLED'] as const
+export type RideStatus = (typeof RIDE_STATUSES)[number]
+export type RideActor = 'PASSENGER' | 'DRIVER' | 'SYSTEM' | 'PAYMENT'
+
+const transitions: Record<RideStatus, Partial<Record<RideActor, readonly RideStatus[]>>> = {
+  REQUESTING: { SYSTEM: ['SEARCHING_DRIVER'], PASSENGER: ['CANCELLED'] },
+  SEARCHING_DRIVER: { SYSTEM: ['DRIVER_ASSIGNED', 'CANCELLED'], PASSENGER: ['CANCELLED'] },
+  DRIVER_ASSIGNED: { DRIVER: ['DRIVER_ARRIVING'], PASSENGER: ['CANCELLED'], SYSTEM: ['CANCELLED'] },
+  DRIVER_ARRIVING: { DRIVER: ['DRIVER_ARRIVED'], PASSENGER: ['CANCELLED'], SYSTEM: ['CANCELLED'] },
+  DRIVER_ARRIVED: { DRIVER: ['TRIP_STARTED'], PASSENGER: ['CANCELLED'], SYSTEM: ['CANCELLED'] },
+  TRIP_STARTED: { DRIVER: ['TRIP_COMPLETED'] },
+  TRIP_COMPLETED: { SYSTEM: ['PAYMENT_PENDING', 'COMPLETED'] },
+  PAYMENT_PENDING: { PAYMENT: ['COMPLETED'], SYSTEM: ['CANCELLED'] },
+  COMPLETED: {},
+  CANCELLED: {},
+}
+
+export function canTransitionRide(current: RideStatus, next: RideStatus, actor: RideActor) {
+  return transitions[current][actor]?.includes(next) ?? false
+}
