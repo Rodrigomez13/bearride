@@ -19,6 +19,7 @@ export function MapboxMap({ onLocation, destination }: { onLocation?: (coordinat
   const container = useRef<HTMLDivElement>(null)
   const mapRef = useRef<import('maplibre-gl').Map | null>(null)
   const markersRef = useRef<import('maplibre-gl').Marker[]>([])
+  const destinationMarkerRef = useRef<import('maplibre-gl').Marker | null>(null)
   const [message, setMessage] = useState('Cargando mapa de Formosa…')
 
   useEffect(() => {
@@ -30,28 +31,30 @@ export function MapboxMap({ onLocation, destination }: { onLocation?: (coordinat
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
       map.addControl(new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }), 'top-right')
       map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
-      DRIVERS.forEach((driver) => {
-        const element = document.createElement('div')
-        element.className = 'flex size-9 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-lg'
-        element.setAttribute('aria-label', `Conductor ${driver.name}`)
+      markersRef.current = DRIVERS.map((driver) => {
+        const element = document.createElement('button')
+        element.type = 'button'
+        element.title = `Conductor ${driver.name}`
+        element.setAttribute('aria-label', `Ver información de ${driver.name}`)
+        element.className = 'flex size-10 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-lg'
         element.innerHTML = '<span style="font-size:9px;font-weight:700;letter-spacing:-.04em">CAR</span>'
-        new maplibregl.Marker({ element }).setLngLat([driver.longitude, driver.latitude]).setPopup(new maplibregl.Popup({ offset: 22 }).setHTML(`<strong>${driver.name}</strong><br/>${driver.vehicle}<br/>★ ${driver.rating} · ${driver.eta} min`)).addTo(map)
+        return new maplibregl.Marker({ element }).setLngLat([driver.longitude, driver.latitude]).setPopup(new maplibregl.Popup({ offset: 22 }).setHTML(`<strong>${driver.name}</strong><br/>${driver.vehicle}<br/>★ ${driver.rating} · ${driver.eta} min`)).addTo(map)
       })
       map.on('load', () => setMessage(`${DRIVERS.length} conductores cerca · Tocá el mapa para elegir`))
       map.on('click', (event) => onLocation?.({ latitude: event.lngLat.lat, longitude: event.lngLat.lng }))
       mapRef.current = map
     }).catch(() => setMessage('No fue posible cargar el mapa. Revisá tu conexión.'))
-    return () => { disposed = true; markersRef.current.forEach((marker) => marker.remove()); mapRef.current?.remove(); mapRef.current = null }
+    return () => { disposed = true; markersRef.current.forEach((marker) => marker.remove()); destinationMarkerRef.current?.remove(); mapRef.current?.remove(); mapRef.current = null }
   }, [onLocation])
 
   useEffect(() => {
     if (!mapRef.current || !destination) return
     void import('maplibre-gl').then(({ default: maplibregl }) => {
-      markersRef.current.forEach((marker) => marker.remove())
+      destinationMarkerRef.current?.remove()
       const element = document.createElement('div')
       element.className = 'flex size-8 items-center justify-center rounded-full border-2 border-card bg-accent text-accent-foreground shadow-lg'
       element.innerHTML = '<span style="font-size:16px">●</span>'
-      markersRef.current = [new maplibregl.Marker({ element }).setLngLat([destination.longitude, destination.latitude]).addTo(mapRef.current!)]
+      destinationMarkerRef.current = new maplibregl.Marker({ element }).setLngLat([destination.longitude, destination.latitude]).addTo(mapRef.current!)
       mapRef.current?.flyTo({ center: [destination.longitude, destination.latitude], zoom: 14, duration: 800 })
     })
   }, [destination])
