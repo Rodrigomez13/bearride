@@ -21,6 +21,16 @@ export function MapboxMap({ onLocation, destination }: { onLocation?: (coordinat
   const markersRef = useRef<import('maplibre-gl').Marker[]>([])
   const destinationMarkerRef = useRef<import('maplibre-gl').Marker | null>(null)
   const [message, setMessage] = useState('Cargando mapa de Formosa…')
+  const locateUser = () => {
+    if (!navigator.geolocation) { setMessage('Tu navegador no admite geolocalización.'); return }
+    setMessage('Buscando tu ubicación…')
+    navigator.geolocation.getCurrentPosition(({ coords }) => {
+      const point = { latitude: coords.latitude, longitude: coords.longitude }
+      onLocation?.(point)
+      mapRef.current?.flyTo({ center: [coords.longitude, coords.latitude], zoom: 14, duration: 800 })
+      setMessage('Ubicación detectada · mapa centrado')
+    }, () => setMessage('No pudimos acceder a tu ubicación · usando Formosa'))
+  }
 
   useEffect(() => {
     if (!container.current) return
@@ -77,7 +87,7 @@ export function MapboxMap({ onLocation, destination }: { onLocation?: (coordinat
     })
   }, [destination])
 
-  return <div className="relative min-h-80 overflow-hidden rounded-2xl border border-border bg-secondary"><div ref={container} className="absolute inset-0" /><div className="absolute left-3 top-3 flex items-center gap-2 rounded-xl bg-card/95 px-3 py-2 text-xs font-semibold shadow-sm"><CarFront className="size-4 text-primary" />{DRIVERS.length} disponibles</div><p className="absolute bottom-3 left-3 flex items-center gap-2 rounded-lg bg-card/95 px-3 py-2 text-xs font-semibold shadow-sm"><LocateFixed className="size-3 text-primary" />{message}</p></div>
+  return <div className="relative min-h-80 overflow-hidden rounded-[2rem] border border-border bg-secondary"><div ref={container} className="absolute inset-0" /><div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-card/95 px-3 py-2 text-xs font-semibold shadow-lg"><span className="size-2 rounded-full bg-accent" aria-hidden="true" />{DRIVERS.length} conductores disponibles</div><button type="button" onClick={locateUser} className="absolute right-4 top-4 inline-flex min-h-10 items-center gap-2 rounded-full bg-card/95 px-3 py-2 text-xs font-bold shadow-lg transition hover:bg-card"><LocateFixed className="size-4 text-accent" />Usar mi ubicación</button><p role="status" className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-card/95 px-3 py-2 text-xs font-semibold shadow-lg"><LocateFixed className="size-3 text-accent" />{message}</p></div>
 }
 
 export type { Coordinates, Driver }
