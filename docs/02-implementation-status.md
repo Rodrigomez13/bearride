@@ -14,9 +14,9 @@
   SQL que exige conductor aprobado.
 - Funciones SQL para cotizar, crear solicitudes y transicionar viajes. El
   precio y el estado se calculan/validan en base de datos.
-- Mapa MapLibre con estilo de Mapbox, geocodificación limitada a Formosa y
-  cálculo de rutas mediante Mapbox Directions. La búsqueda se ejecuta desde el
-  servidor y no usa el Nominatim público para autocompletado.
+- Mapa MapLibre con estilo OpenFreeMap, geocodificación limitada a Formosa y
+  cálculo de rutas mediante OSRM. La búsqueda se ejecuta desde el servidor y
+  no usa el Nominatim público para autocompletado.
 - El pasajero obtiene una cotización desde la función SQL autorizada y confirma
   la solicitud mediante `create_ride_request`; el conductor aprobado puede
   activar/desactivar disponibilidad con ubicación del dispositivo.

@@ -1,7 +1,7 @@
 'use client'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { CarFront, LocateFixed } from 'lucide-react'
+import { LocateFixed, Navigation } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 type Coordinates = { latitude: number; longitude: number }
@@ -29,29 +29,17 @@ export function MapboxMap({ onLocation, destination, origin, route }: { onLocati
     let disposed = false
     void import('maplibre-gl').then(({ default: maplibregl }) => {
       if (disposed || !container.current) return
-      const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
       const map = new maplibregl.Map({
         container: container.current,
         center: FORMOSA,
         zoom: 12,
         attributionControl: false,
-        style: accessToken ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=${accessToken}` : {
-          version: 8,
-          sources: {
-            osm: {
-              type: 'raster',
-              tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-              tileSize: 256,
-              attribution: '© OpenStreetMap contributors',
-            },
-          },
-          layers: [{ id: 'osm', type: 'raster', source: 'osm', minzoom: 0, maxzoom: 19 }],
-        },
+        style: 'https://tiles.openfreemap.org/styles/liberty',
       })
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
       map.addControl(new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }), 'top-right')
       map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
-      map.on('error', () => setMessage('No se pudo cargar una tesela. Reintentá en unos segundos.'))
+      map.on('error', () => setMessage('No se pudo cargar el mapa. Reintentá en unos segundos.'))
       markersRef.current = DRIVERS.map((driver) => {
         const element = document.createElement('button')
         element.type = 'button'
@@ -61,7 +49,7 @@ export function MapboxMap({ onLocation, destination, origin, route }: { onLocati
         element.innerHTML = '<span style="font-size:9px;font-weight:700;letter-spacing:-.04em">CAR</span>'
         return new maplibregl.Marker({ element }).setLngLat([driver.longitude, driver.latitude]).setPopup(new maplibregl.Popup({ offset: 22 }).setHTML(`<strong>${driver.name}</strong><br/>${driver.vehicle}<br/>★ ${driver.rating} · ${driver.eta} min`)).addTo(map)
       })
-      map.on('load', () => setMessage(accessToken ? `${DRIVERS.length} conductores cerca · Elegí un punto en el mapa` : 'Mapa sin configurar. Agregá el token de Mapbox.'))
+      map.on('load', () => setMessage('Mapa listo · Elegí un punto para tu destino'))
       map.on('click', (event) => onLocation?.({ latitude: event.lngLat.lat, longitude: event.lngLat.lng }))
       mapRef.current = map
     }).catch(() => setMessage('No fue posible cargar el mapa. Revisá tu conexión.'))
@@ -107,7 +95,7 @@ export function MapboxMap({ onLocation, destination, origin, route }: { onLocati
     return () => { if (map.getLayer(layerId)) map.removeLayer(layerId); if (map.getSource(sourceId)) map.removeSource(sourceId) }
   }, [route])
 
-  return <div className="relative min-h-80 overflow-hidden rounded-2xl border border-border bg-secondary"><div ref={container} className="absolute inset-0" /><div className="absolute left-3 top-3 flex items-center gap-2 rounded-xl bg-card/95 px-3 py-2 text-xs font-semibold shadow-sm"><CarFront className="size-4 text-primary" />{DRIVERS.length} disponibles</div><p className="absolute bottom-3 left-3 flex items-center gap-2 rounded-lg bg-card/95 px-3 py-2 text-xs font-semibold shadow-sm"><LocateFixed className="size-3 text-primary" />{message}</p></div>
+  return <div className="relative min-h-80 overflow-hidden rounded-[2rem] border border-white/60 bg-secondary shadow-2xl shadow-primary/10"><div ref={container} className="absolute inset-0" /><div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/80 bg-card/95 px-3 py-2 text-xs font-bold shadow-lg backdrop-blur"><Navigation className="size-3.5 text-primary" />Viaje seguro</div><p className="absolute bottom-4 left-4 flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-xl bg-foreground/90 px-3 py-2 text-xs font-medium text-background shadow-lg backdrop-blur"><LocateFixed className="size-3.5 shrink-0 text-primary" />{message}</p></div>
 }
 
 export type { Coordinates, Driver }
