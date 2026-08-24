@@ -1,0 +1,3 @@
+import Image from 'next/image'
+import type { ReactNode } from 'react'
+export default function AuthLayout({ children }: { children: ReactNode }) { return <main className="grid min-h-screen place-items-center bg-background p-5"><div className="grid w-full max-w-5xl items-center gap-10 lg:grid-cols-2"><div className="hidden lg:block"><Image src="/bearride-app-icon.png" alt="BearRide" width={84} height={84} className="rounded-3xl" /><h2 className="mt-8 font-serif text-5xl tracking-tight">Tu ciudad,<br />a un viaje de distancia.</h2><p className="mt-5 max-w-md text-muted-foreground">Una plataforma para pasajeros y conductores, con seguridad y control de acceso desde el inicio.</p></div>{children}</div></main> }
