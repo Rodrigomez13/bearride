@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'mapbox-gl/dist/mapbox-gl.css';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
@@ -47,18 +48,18 @@
 
 :root {
   color-scheme: light;
-  --background: oklch(0.97 0.018 150);
-  --foreground: oklch(0.19 0.035 170);
-  --card: oklch(0.995 0.006 150);
-  --card-foreground: oklch(0.19 0.035 170);
-  --popover: oklch(0.995 0.006 150);
-  --popover-foreground: oklch(0.19 0.035 170);
-  --primary: oklch(0.32 0.085 174);
-  --primary-foreground: oklch(0.98 0.01 150);
-  --secondary: oklch(0.93 0.025 155);
-  --secondary-foreground: oklch(0.27 0.05 170);
-  --muted: oklch(0.93 0.025 155);
-  --muted-foreground: oklch(0.48 0.035 170);
+  --background: oklch(0.985 0.006 90);
+  --foreground: oklch(0.16 0.012 80);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.012 80);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.16 0.012 80);
+  --primary: oklch(0.83 0.17 88);
+  --primary-foreground: oklch(0.16 0.012 80);
+  --secondary: oklch(0.95 0.012 88);
+  --secondary-foreground: oklch(0.25 0.015 80);
+  --muted: oklch(0.95 0.012 88);
+  --muted-foreground: oklch(0.48 0.015 80);
   --accent: oklch(0.82 0.14 82);
   --accent-foreground: oklch(0.26 0.06 75);
   --destructive: oklch(0.577 0.245 27.325);
