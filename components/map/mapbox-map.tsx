@@ -27,10 +27,28 @@ export function MapboxMap({ onLocation, destination }: { onLocation?: (coordinat
     let disposed = false
     void import('maplibre-gl').then(({ default: maplibregl }) => {
       if (disposed || !container.current) return
-      const map = new maplibregl.Map({ container: container.current, style: 'https://tiles.openfreemap.org/styles/liberty', center: FORMOSA, zoom: 12, attributionControl: false })
+      const map = new maplibregl.Map({
+        container: container.current,
+        center: FORMOSA,
+        zoom: 12,
+        attributionControl: false,
+        style: {
+          version: 8,
+          sources: {
+            osm: {
+              type: 'raster',
+              tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+              tileSize: 256,
+              attribution: '© OpenStreetMap contributors',
+            },
+          },
+          layers: [{ id: 'osm', type: 'raster', source: 'osm', minzoom: 0, maxzoom: 19 }],
+        },
+      })
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
       map.addControl(new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }), 'top-right')
       map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
+      map.on('error', () => setMessage('No se pudo cargar una tesela. Reintentá en unos segundos.'))
       markersRef.current = DRIVERS.map((driver) => {
         const element = document.createElement('button')
         element.type = 'button'
